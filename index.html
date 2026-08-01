@@ -688,6 +688,7 @@
 
         <div class="toolbar">
           <button class="btn btn-primary" id="addEmployeeBtn">＋ Agregar operador</button>
+          <button class="btn btn-secondary" id="whatsappSummaryBtn">WhatsApp · Mandar resumen</button>
           <button class="btn btn-danger" id="clearDayBtn">Limpiar día</button>
         </div>
       </div>
@@ -785,6 +786,28 @@
     const STORAGE_PREFIX = 'vdc_bonos_desayuno_';
     const CONFIG_KEY = 'vdc_bonos_desayuno_config';
     const EMPLOYEES_KEY = 'vdc_bonos_desayuno_operadores';
+    const DEFAULT_OPERATORS = [
+      'Diego Cano Villegas',
+      'Granados Medina Sergio',
+      'Ismael Parra Marquez',
+      'Jorge Arturo Campos Gonzalez',
+      'Jose Carlos Guzman Gutierrez',
+      'Jose Luis Rodriguez Rodriguez',
+      'Jose Martinez Flores',
+      'Jose Raul Vazquez Peña',
+      'Juan Aldaco Aguilera',
+      'Juan Rodolfo Vazquez Peña',
+      'Luis Fernando Aguilera Rodriguez',
+      'Luis German Velazquez',
+      'Manuel Alenajdro Garcia Otero',
+      'Marco Antonio Serrano Rico',
+      'Mario Eduardo Vazquez Peña',
+      'Miguel Angel Laguna Valtierra',
+      'Owen Antonio Cipriano Borja Mares',
+      'Ricardo Benjamin Carrera Meza',
+      'Sebastian Alejandro Morales Cardenas',
+      'Victor Campos'
+    ];
 
     let records = [];
     let saveTimer = null;
@@ -903,6 +926,50 @@
         day:'2-digit',
         month:'short'
       }).format(d);
+    }
+
+
+    function normalizeName(value){
+      return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+    }
+
+    function preloadDefaultOperators(){
+      const current = getSavedEmployees();
+      const known = new Set(current.map(normalizeName));
+
+      DEFAULT_OPERATORS.forEach(name => {
+        if(!known.has(normalizeName(name))){
+          current.push(name);
+          known.add(normalizeName(name));
+        }
+      });
+
+      current.sort((a,b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
+      localStorage.setItem(EMPLOYEES_KEY, JSON.stringify(current));
+    }
+
+    function addDefaultOperatorsToCurrentDay(){
+      if(records.length) return;
+
+      records = DEFAULT_OPERATORS.map((name, index) => {
+        const time = '06:00';
+        return {
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + index + Math.random()),
+          name,
+          time,
+          bonus:suggestedBonus(time),
+          manual:false,
+          delivered:false,
+          deliveredAt:'',
+          deliveredBy:''
+        };
+      });
+
+      saveDay(false);
     }
 
     function getSavedEmployees(){
@@ -1197,6 +1264,56 @@
       $('bottomTotal').textContent = money(total);
     }
 
+
+    function buildWhatsAppSummary(){
+      const date = $('workDate').value;
+      const delivered = records.filter(r => r.delivered);
+      const pending = records.filter(r => !r.delivered);
+      const totalAuthorized = records.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
+      const totalDelivered = delivered.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
+      const totalPending = pending.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
+
+      let text = `*CONTROL DE DESAYUNOS VDC 360°*\n`;
+      text += `Fecha: ${date}\n\n`;
+      text += `*RESUMEN*\n`;
+      text += `Operadores: ${records.length}\n`;
+      text += `Entregados: ${delivered.length}\n`;
+      text += `Pendientes: ${pending.length}\n`;
+      text += `Total autorizado: ${money(totalAuthorized)}\n`;
+      text += `Total entregado: ${money(totalDelivered)}\n`;
+      text += `Falta entregar: ${money(totalPending)}\n\n`;
+
+      text += `*ENTREGADOS*\n`;
+      if(!delivered.length){
+        text += `- Ninguno\n`;
+      }else{
+        delivered.forEach(r => {
+          text += `- ${r.name}: ${money(r.bonus)} | ${r.deliveredAt || 'sin hora'} | por ${r.deliveredBy || 'sin responsable'}\n`;
+        });
+      }
+
+      text += `\n*PENDIENTES*\n`;
+      if(!pending.length){
+        text += `- Ninguno\n`;
+      }else{
+        pending.forEach(r => {
+          text += `- ${r.name}: ${money(r.bonus)} | llegada ${r.time || '--:--'}\n`;
+        });
+      }
+
+      return text;
+    }
+
+    function sendWhatsAppSummary(){
+      if(!records.length){
+        toast('No hay operadores registrados');
+        return;
+      }
+
+      const url = 'https://wa.me/?text=' + encodeURIComponent(buildWhatsAppSummary());
+      window.open(url, '_blank', 'noopener');
+    }
+
     function clearDay(){
       if(confirm('¿Borrar todos los operadores y bonos de esta fecha?')){
         records = [];
@@ -1222,8 +1339,11 @@
 
     $('workDate').value = todayISO();
     loadConfig();
+    preloadDefaultOperators();
     renderSavedEmployees();
     loadDay();
+    addDefaultOperatorsToCurrentDay();
+    render();
 
     $('addEmployeeBtn').addEventListener('click', () => {
       $('employeeName').value = '';
@@ -1259,6 +1379,7 @@
     $('pageOperator').addEventListener('input', saveConfig);
 
     $('clearDayBtn').addEventListener('click', clearDay);
+    $('whatsappSummaryBtn').addEventListener('click', sendWhatsAppSummary);
     $('searchOperator').addEventListener('input', render);
     $('statusFilter').addEventListener('change', render);
     $('saveBtn').addEventListener('click', () => saveDay(true));
