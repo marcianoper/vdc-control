@@ -535,6 +535,75 @@
       margin-top:15px;
     }
 
+
+    .employee-card.delivered{
+      border-color:#4ade80;
+      background:linear-gradient(180deg,#ffffff,#ecfdf5);
+    }
+
+    .delivery-box{
+      margin-top:12px;
+      border-radius:16px;
+      padding:13px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.88);
+    }
+
+    .delivery-meta{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .delivery-meta div{
+      border-radius:12px;
+      background:#f9fafb;
+      border:1px solid var(--line);
+      padding:10px;
+    }
+
+    .delivery-meta span{
+      display:block;
+      color:var(--muted);
+      font-size:.72rem;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .delivery-meta strong{
+      display:block;
+      font-size:.95rem;
+    }
+
+    .deliver-btn{
+      width:100%;
+      min-height:50px;
+      border:none;
+      border-radius:14px;
+      font-weight:1000;
+      cursor:pointer;
+      background:var(--yellow);
+      color:#111827;
+    }
+
+    .deliver-btn.done{
+      background:var(--brand);
+      color:white;
+    }
+
+    .undo-btn{
+      width:100%;
+      min-height:42px;
+      margin-top:8px;
+      border:none;
+      border-radius:12px;
+      background:#eef2f7;
+      color:#374151;
+      font-weight:900;
+      cursor:pointer;
+    }
+
     @media (max-width:850px){
       .controls-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
       .stats{grid-template-columns:repeat(2, minmax(0,1fr))}
@@ -614,9 +683,6 @@
 
         <div class="toolbar">
           <button class="btn btn-primary" id="addEmployeeBtn">＋ Agregar operador</button>
-          <button class="btn btn-secondary" id="copyYesterdayBtn">Copiar operadores de ayer</button>
-          <button class="btn btn-secondary" id="shareBtn">Compartir resumen</button>
-          <button class="btn btn-secondary" onclick="window.print()">Imprimir</button>
           <button class="btn btn-danger" id="clearDayBtn">Limpiar día</button>
         </div>
       </div>
@@ -630,16 +696,43 @@
             <strong id="statEmployees">0</strong>
           </div>
           <div class="stat">
-            <span>Bono completo</span>
-            <strong id="statFull">0</strong>
+            <span>Entregados</span>
+            <strong id="statDelivered">0</strong>
           </div>
           <div class="stat">
-            <span>Bono reducido</span>
-            <strong id="statReduced">0</strong>
+            <span>Pendientes</span>
+            <strong id="statPending">0</strong>
           </div>
           <div class="stat">
-            <span>Total del día</span>
+            <span>Total autorizado</span>
             <strong id="statTotal">$0</strong>
+          </div>
+          <div class="stat">
+            <span>Total entregado</span>
+            <strong id="statDeliveredAmount">$0</strong>
+          </div>
+          <div class="stat">
+            <span>Falta entregar</span>
+            <strong id="statPendingAmount">$0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-body">
+        <div class="controls-grid" style="grid-template-columns:2fr 1fr">
+          <div class="field">
+            <label for="searchOperator">Buscar operador</label>
+            <input id="searchOperator" type="search" placeholder="Escribe un nombre..." />
+          </div>
+          <div class="field">
+            <label for="statusFilter">Mostrar</label>
+            <select id="statusFilter">
+              <option value="all">Todos</option>
+              <option value="pending">Pendientes</option>
+              <option value="delivered">Entregados</option>
+            </select>
           </div>
         </div>
       </div>
@@ -664,7 +757,8 @@
         <h3>Agregar operador</h3>
         <div class="field">
           <label for="employeeName">Nombre</label>
-          <input id="employeeName" autocomplete="off" placeholder="Ej. Jesús" required />
+          <input id="employeeName" list="savedEmployeesList" autocomplete="off" placeholder="Ej. Jesús" required />
+          <datalist id="savedEmployeesList"></datalist>
         </div>
         <div class="field" style="margin-top:12px">
           <label for="employeeTime">Hora de llegada</label>
@@ -685,6 +779,7 @@
 
     const STORAGE_PREFIX = 'vdc_bonos_desayuno_';
     const CONFIG_KEY = 'vdc_bonos_desayuno_config';
+    const EMPLOYEES_KEY = 'vdc_bonos_desayuno_operadores';
 
     let records = [];
     let saveTimer = null;
@@ -761,6 +856,12 @@
       try{
         records = JSON.parse(localStorage.getItem(storageKey()) || '[]');
         if(!Array.isArray(records)) records = [];
+        records = records.map(r => ({
+          ...r,
+          delivered:Boolean(r.delivered),
+          deliveredAt:r.deliveredAt || '',
+          deliveredBy:r.deliveredBy || ''
+        }));
       }catch(e){
         records = [];
       }
@@ -797,14 +898,49 @@
       }).format(d);
     }
 
+    function getSavedEmployees(){
+      try{
+        const list = JSON.parse(localStorage.getItem(EMPLOYEES_KEY) || '[]');
+        return Array.isArray(list) ? list : [];
+      }catch(e){
+        return [];
+      }
+    }
+
+    function saveEmployeeName(name){
+      const cleanName = String(name || '').trim();
+      if(!cleanName) return;
+      const list = getSavedEmployees();
+      const exists = list.some(item =>
+        String(item).localeCompare(cleanName, 'es', {sensitivity:'base'}) === 0
+      );
+      if(!exists){
+        list.push(cleanName);
+        list.sort((a,b) => a.localeCompare(b, 'es', {sensitivity:'base'}));
+        localStorage.setItem(EMPLOYEES_KEY, JSON.stringify(list));
+      }
+      renderSavedEmployees();
+    }
+
+    function renderSavedEmployees(){
+      const list = getSavedEmployees();
+      $('savedEmployeesList').innerHTML = list
+        .map(name => `<option value="${escapeAttr(name)}"></option>`)
+        .join('');
+    }
+
     function addEmployee(name, time){
+      saveEmployeeName(name);
       const bonus = suggestedBonus(time);
       records.push({
         id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
         name: name.trim(),
         time,
         bonus,
-        manual:false
+        manual:false,
+        delivered:false,
+        deliveredAt:'',
+        deliveredBy:''
       });
       records.sort((a,b) => (a.time || '').localeCompare(b.time || ''));
       saveDay(false);
@@ -860,20 +996,68 @@
       render();
     }
 
+
+    function currentTime(){
+      return new Date().toLocaleTimeString('es-MX',{
+        hour:'2-digit',
+        minute:'2-digit'
+      });
+    }
+
+    function deliverBonus(id){
+      const rec = records.find(r => r.id === id);
+      if(!rec) return;
+
+      const responsible = prompt('¿Quién entregó el bono?', rec.deliveredBy || '');
+      if(responsible === null) return;
+
+      rec.delivered = true;
+      rec.deliveredAt = currentTime();
+      rec.deliveredBy = responsible.trim() || 'Sin especificar';
+
+      saveDay(false);
+      render();
+      toast('Bono marcado como entregado');
+    }
+
+    function undoDelivery(id){
+      const rec = records.find(r => r.id === id);
+      if(!rec) return;
+      if(!confirm(`¿Marcar nuevamente como pendiente a ${rec.name}?`)) return;
+
+      rec.delivered = false;
+      rec.deliveredAt = '';
+      rec.deliveredBy = '';
+      saveDay(false);
+      render();
+      toast('Entrega deshecha');
+    }
+
     function render(){
       const grid = $('employeesGrid');
+      const search = ($('searchOperator')?.value || '').trim().toLowerCase();
+      const filter = $('statusFilter')?.value || 'all';
 
-      if(!records.length){
+      const filtered = records.filter(rec => {
+        const matchesName = String(rec.name || '').toLowerCase().includes(search);
+        const matchesFilter =
+          filter === 'all' ||
+          (filter === 'pending' && !rec.delivered) ||
+          (filter === 'delivered' && rec.delivered);
+        return matchesName && matchesFilter;
+      });
+
+      if(!filtered.length){
         grid.innerHTML = `
           <div class="empty">
-            <strong>No hay operadores registrados.</strong><br>
-            Presiona “Agregar operador” para comenzar.
+            <strong>No hay operadores para mostrar.</strong><br>
+            Agrega uno nuevo o cambia el filtro.
           </div>
         `;
       }else{
-        grid.innerHTML = records.map(rec => {
+        grid.innerHTML = filtered.map(rec => {
           const suggested = suggestedBonus(rec.time);
-          const status = statusOf(rec);
+          const status = rec.delivered ? 'delivered' : statusOf(rec);
           const buttons = [0, getConfig().late, getConfig().full]
             .filter((v,i,a) => a.indexOf(v) === i)
             .sort((a,b)=>a-b)
@@ -890,9 +1074,11 @@
               <div class="employee-head">
                 <div class="employee-name">
                   <h3>${escapeHTML(rec.name)}</h3>
-                  <small>Entrada registrada</small>
+                  <small>Entrada: ${rec.time || '--:--'}</small>
                 </div>
-                <span class="status ${status}">${statusText(status)}</span>
+                <span class="status ${rec.delivered ? 'full' : statusOf(rec)}">
+                  ${rec.delivered ? 'Entregado' : statusText(statusOf(rec))}
+                </span>
               </div>
 
               <div class="card-fields">
@@ -949,6 +1135,27 @@
                 </div>
               </div>
 
+              <div class="delivery-box">
+                ${rec.delivered ? `
+                  <div class="delivery-meta">
+                    <div>
+                      <span>Hora de entrega</span>
+                      <strong>${escapeHTML(rec.deliveredAt || '—')}</strong>
+                    </div>
+                    <div>
+                      <span>Entregado por</span>
+                      <strong>${escapeHTML(rec.deliveredBy || '—')}</strong>
+                    </div>
+                  </div>
+                  <button class="deliver-btn done" type="button">✓ BONO ENTREGADO</button>
+                  <button class="undo-btn" type="button" onclick="undoDelivery('${rec.id}')">Deshacer entrega</button>
+                ` : `
+                  <button class="deliver-btn" type="button" onclick="deliverBonus('${rec.id}')">
+                    ENTREGAR BONO
+                  </button>
+                `}
+              </div>
+
               <div class="card-actions">
                 <button class="mini-btn mini-danger" onclick="removeEmployee('${rec.id}')">
                   Eliminar
@@ -964,82 +1171,18 @@
 
     function updateStats(){
       const total = records.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
-      const full = records.filter(r => !r.manual && statusOf(r) === 'full').length;
-      const reduced = records.filter(r => !r.manual && statusOf(r) === 'reduced').length;
+      const delivered = records.filter(r => r.delivered);
+      const pending = records.filter(r => !r.delivered);
+      const deliveredAmount = delivered.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
+      const pendingAmount = pending.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
 
       $('statEmployees').textContent = records.length;
-      $('statFull').textContent = full;
-      $('statReduced').textContent = reduced;
+      $('statDelivered').textContent = delivered.length;
+      $('statPending').textContent = pending.length;
       $('statTotal').textContent = money(total);
+      $('statDeliveredAmount').textContent = money(deliveredAmount);
+      $('statPendingAmount').textContent = money(pendingAmount);
       $('bottomTotal').textContent = money(total);
-    }
-
-    function copyYesterday(){
-      const yesterday = previousDateISO($('workDate').value);
-      let old = [];
-      try{
-        old = JSON.parse(localStorage.getItem(storageKey(yesterday)) || '[]');
-      }catch(e){}
-
-      if(!Array.isArray(old) || !old.length){
-        alert('No hay operadores guardados en el día anterior.');
-        return;
-      }
-
-      const existingNames = new Set(records.map(r => r.name.toLowerCase()));
-      old.forEach(rec => {
-        if(!existingNames.has(String(rec.name).toLowerCase())){
-          records.push({
-            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
-            name:rec.name,
-            time:rec.time || '06:00',
-            bonus:suggestedBonus(rec.time || '06:00'),
-            manual:false
-          });
-        }
-      });
-
-      records.sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-      saveDay(false);
-      render();
-      toast('Operadores copiados');
-    }
-
-    function summaryText(){
-      const date = $('workDate').value;
-      const total = records.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
-
-      let text = `BONOS DE DESAYUNO VDC 360°\nFecha: ${date}\n\n`;
-
-      if(!records.length){
-        text += 'Sin operadores registrados.\n';
-      }else{
-        records.forEach((r,i) => {
-          const tag = r.manual ? ' (modificado)' : '';
-          text += `${i+1}. ${r.name} | ${r.time || '--:--'} | ${money(r.bonus)}${tag}\n`;
-        });
-      }
-
-      text += `\nTOTAL: ${money(total)}`;
-      return text;
-    }
-
-    async function shareSummary(){
-      const text = summaryText();
-
-      if(navigator.share){
-        try{
-          await navigator.share({
-            title:'Bonos de desayuno',
-            text
-          });
-          return;
-        }catch(e){
-          if(e.name === 'AbortError') return;
-        }
-      }
-
-      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
     }
 
     function clearDay(){
@@ -1067,6 +1210,7 @@
 
     $('workDate').value = todayISO();
     loadConfig();
+    renderSavedEmployees();
     loadDay();
 
     $('addEmployeeBtn').addEventListener('click', () => {
@@ -1100,9 +1244,9 @@
       recalculateAutomatic();
     });
 
-    $('copyYesterdayBtn').addEventListener('click', copyYesterday);
-    $('shareBtn').addEventListener('click', shareSummary);
     $('clearDayBtn').addEventListener('click', clearDay);
+    $('searchOperator').addEventListener('input', render);
+    $('statusFilter').addEventListener('change', render);
     $('saveBtn').addEventListener('click', () => saveDay(true));
 
     window.addEventListener('beforeunload', () => saveDay(false));
