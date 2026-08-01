@@ -679,6 +679,11 @@
             <label for="lateBonus">Bono posterior</label>
             <input id="lateBonus" type="number" inputmode="numeric" min="0" step="10" value="100" />
           </div>
+
+          <div class="field">
+            <label for="pageOperator">Operador de la página</label>
+            <input id="pageOperator" type="text" autocomplete="name" placeholder="Ej. Marciano" />
+          </div>
         </div>
 
         <div class="toolbar">
@@ -813,7 +818,8 @@
       return {
         cutoff: $('cutoffTime').value || '06:30',
         full: Math.max(0, Number($('fullBonus').value || 0)),
-        late: Math.max(0, Number($('lateBonus').value || 0))
+        late: Math.max(0, Number($('lateBonus').value || 0)),
+        operator: $('pageOperator').value.trim()
       };
     }
 
@@ -827,6 +833,7 @@
         if(cfg.cutoff) $('cutoffTime').value = cfg.cutoff;
         if(cfg.full != null) $('fullBonus').value = cfg.full;
         if(cfg.late != null) $('lateBonus').value = cfg.late;
+        if(cfg.operator) $('pageOperator').value = cfg.operator;
       }catch(e){}
     }
 
@@ -1008,12 +1015,17 @@
       const rec = records.find(r => r.id === id);
       if(!rec) return;
 
-      const responsible = prompt('¿Quién entregó el bono?', rec.deliveredBy || '');
-      if(responsible === null) return;
+      const responsible = $('pageOperator').value.trim();
+
+      if(!responsible){
+        $('pageOperator').focus();
+        toast('Escribe quién está manejando la página');
+        return;
+      }
 
       rec.delivered = true;
       rec.deliveredAt = currentTime();
-      rec.deliveredBy = responsible.trim() || 'Sin especificar';
+      rec.deliveredBy = responsible;
 
       saveDay(false);
       render();
@@ -1243,6 +1255,8 @@
       saveConfig();
       recalculateAutomatic();
     });
+    $('pageOperator').addEventListener('change', saveConfig);
+    $('pageOperator').addEventListener('input', saveConfig);
 
     $('clearDayBtn').addEventListener('click', clearDay);
     $('searchOperator').addEventListener('input', render);
