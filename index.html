@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#14532d" />
+  <title>Bonos de Desayuno | VDC 360°</title>
+
+  <style>
+    :root{
+      --brand:#166534;
+      --brand-dark:#14532d;
+      --brand-soft:#dcfce7;
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --yellow:#f59e0b;
+      --yellow-soft:#fef3c7;
+      --blue:#2563eb;
+      --blue-soft:#dbeafe;
+      --red:#dc2626;
+      --red-soft:#fee2e2;
+      --gray-soft:#f3f4f6;
+      --shadow:0 8px 24px rgba(15,23,42,.08);
+      --radius:20px;
+    }
+
+    *{box-sizing:border-box}
+
+    html{
+      -webkit-text-size-adjust:100%;
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(22,101,52,.10), transparent 260px),
+        var(--bg);
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      min-height:100vh;
+      padding-bottom:110px;
+    }
+
+    button,input,select{
+      font:inherit;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    button{
+      touch-action:manipulation;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(20,83,45,.96);
+      backdrop-filter:blur(14px);
+      color:white;
+      padding:max(14px, env(safe-area-inset-top)) 16px 14px;
+      box-shadow:0 3px 18px rgba(0,0,0,.14);
+    }
+
+    .topbar-inner{
+      max-width:1200px;
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:clamp(1.1rem, 4vw, 1.55rem);
+      line-height:1.1;
+      letter-spacing:-.02em;
+    }
+
+    .brand p{
+      margin:5px 0 0;
+      font-size:.85rem;
+      opacity:.82;
+    }
+
+    .date-chip{
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:14px;
+      padding:9px 12px;
+      font-weight:800;
+      white-space:nowrap;
+      font-size:.86rem;
+    }
+
+    .app{
+      width:min(1200px, calc(100% - 24px));
+      margin:18px auto 0;
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid rgba(229,231,235,.9);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+
+    .panel-body{
+      padding:16px;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    .section-title h2{
+      margin:0;
+      font-size:1.05rem;
+    }
+
+    .section-title p{
+      margin:5px 0 0;
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.35;
+    }
+
+    .controls-grid{
+      display:grid;
+      gap:12px;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+    }
+
+    .field label{
+      display:block;
+      margin:0 0 7px;
+      font-size:.78rem;
+      font-weight:900;
+      color:#374151;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      min-height:48px;
+      border:1.5px solid var(--line);
+      border-radius:13px;
+      background:#fff;
+      color:var(--text);
+      padding:10px 12px;
+      outline:none;
+      font-weight:750;
+    }
+
+    .field input:focus,
+    .field select:focus{
+      border-color:var(--brand);
+      box-shadow:0 0 0 4px rgba(22,101,52,.10);
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .btn{
+      border:none;
+      border-radius:13px;
+      min-height:46px;
+      padding:10px 15px;
+      font-weight:900;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:transform .12s ease, opacity .12s ease;
+    }
+
+    .btn:active{
+      transform:scale(.98);
+    }
+
+    .btn-primary{
+      color:white;
+      background:var(--brand);
+    }
+
+    .btn-secondary{
+      color:#1f2937;
+      background:#eef2f7;
+    }
+
+    .btn-danger{
+      color:#991b1b;
+      background:var(--red-soft);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:10px;
+    }
+
+    .stat{
+      border-radius:16px;
+      padding:14px;
+      background:#f9fafb;
+      border:1px solid var(--line);
+    }
+
+    .stat span{
+      display:block;
+      color:var(--muted);
+      font-size:.78rem;
+      font-weight:800;
+      margin-bottom:5px;
+    }
+
+    .stat strong{
+      display:block;
+      font-size:1.35rem;
+      letter-spacing:-.03em;
+    }
+
+    .employees-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .employee-card{
+      background:#fff;
+      border:2px solid var(--line);
+      border-radius:20px;
+      padding:15px;
+      box-shadow:0 5px 16px rgba(15,23,42,.05);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .employee-card.full{
+      border-color:#86efac;
+      background:linear-gradient(180deg, #fff, #f0fdf4);
+    }
+
+    .employee-card.reduced{
+      border-color:#fcd34d;
+      background:linear-gradient(180deg, #fff, #fffbeb);
+    }
+
+    .employee-card.none{
+      border-color:#d1d5db;
+      background:linear-gradient(180deg, #fff, #f9fafb);
+    }
+
+    .employee-card.manual{
+      border-color:#93c5fd;
+      background:linear-gradient(180deg, #fff, #eff6ff);
+    }
+
+    .employee-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:13px;
+    }
+
+    .employee-name{
+      min-width:0;
+    }
+
+    .employee-name h3{
+      margin:0;
+      font-size:1.08rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .employee-name small{
+      display:block;
+      margin-top:4px;
+      color:var(--muted);
+      font-weight:750;
+    }
+
+    .status{
+      flex:none;
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:.72rem;
+      font-weight:950;
+      background:var(--gray-soft);
+      color:#374151;
+    }
+
+    .status.full{background:var(--brand-soft); color:var(--brand-dark)}
+    .status.reduced{background:var(--yellow-soft); color:#92400e}
+    .status.manual{background:var(--blue-soft); color:#1e40af}
+    .status.none{background:#e5e7eb; color:#4b5563}
+
+    .card-fields{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .bonus-box{
+      margin-top:12px;
+      border-radius:17px;
+      padding:14px;
+      background:rgba(255,255,255,.82);
+      border:1px solid rgba(209,213,219,.85);
+      text-align:center;
+    }
+
+    .bonus-label{
+      color:var(--muted);
+      font-size:.76rem;
+      font-weight:950;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .bonus-amount{
+      font-size:2.2rem;
+      font-weight:1000;
+      line-height:1;
+      margin:8px 0 5px;
+      letter-spacing:-.05em;
+    }
+
+    .suggested{
+      font-size:.78rem;
+      color:var(--muted);
+      font-weight:750;
+      min-height:18px;
+    }
+
+    .quick-bonus{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .quick-bonus button{
+      min-height:44px;
+      border-radius:12px;
+      border:1.5px solid var(--line);
+      background:#fff;
+      font-weight:950;
+      cursor:pointer;
+    }
+
+    .quick-bonus button.active{
+      border-color:var(--brand);
+      background:var(--brand);
+      color:white;
+    }
+
+    .custom-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      margin-top:9px;
+    }
+
+    .custom-row input{
+      width:100%;
+      min-height:45px;
+      border:1.5px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:1rem;
+      font-weight:850;
+      outline:none;
+    }
+
+    .custom-row button{
+      border:none;
+      min-height:45px;
+      border-radius:12px;
+      padding:0 14px;
+      background:var(--blue);
+      color:#fff;
+      font-weight:900;
+    }
+
+    .card-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-top:11px;
+    }
+
+    .mini-btn{
+      border:none;
+      border-radius:11px;
+      min-height:40px;
+      padding:8px 11px;
+      font-weight:850;
+      cursor:pointer;
+    }
+
+    .mini-danger{
+      background:var(--red-soft);
+      color:#991b1b;
+    }
+
+    .empty{
+      text-align:center;
+      padding:30px 20px;
+      color:var(--muted);
+      border:2px dashed #d1d5db;
+      border-radius:18px;
+      grid-column:1/-1;
+      background:rgba(255,255,255,.55);
+    }
+
+    .bottom-bar{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:30;
+      padding:10px 12px max(10px, env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.94);
+      border-top:1px solid rgba(209,213,219,.9);
+      backdrop-filter:blur(14px);
+      box-shadow:0 -8px 24px rgba(15,23,42,.10);
+    }
+
+    .bottom-inner{
+      max-width:1200px;
+      margin:auto;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+
+    .bottom-total{
+      min-width:0;
+    }
+
+    .bottom-total span{
+      display:block;
+      color:var(--muted);
+      font-size:.75rem;
+      font-weight:850;
+    }
+
+    .bottom-total strong{
+      display:block;
+      font-size:1.45rem;
+      line-height:1.1;
+    }
+
+    .save-btn{
+      min-height:52px;
+      border:none;
+      border-radius:15px;
+      background:var(--brand);
+      color:white;
+      font-weight:1000;
+      padding:0 20px;
+      cursor:pointer;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:92px;
+      transform:translate(-50%, 15px);
+      background:#111827;
+      color:white;
+      padding:11px 15px;
+      border-radius:12px;
+      font-weight:800;
+      opacity:0;
+      pointer-events:none;
+      transition:.2s;
+      z-index:50;
+      max-width:calc(100% - 32px);
+      text-align:center;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%, 0);
+    }
+
+    dialog{
+      width:min(520px, calc(100% - 24px));
+      border:none;
+      border-radius:22px;
+      padding:0;
+      box-shadow:0 24px 70px rgba(0,0,0,.25);
+    }
+
+    dialog::backdrop{
+      background:rgba(15,23,42,.55);
+      backdrop-filter:blur(3px);
+    }
+
+    .dialog-body{
+      padding:18px;
+    }
+
+    .dialog-body h3{
+      margin:0 0 14px;
+    }
+
+    .dialog-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:9px;
+      margin-top:15px;
+    }
+
+    @media (max-width:850px){
+      .controls-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .stats{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .employees-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width:520px){
+      body{padding-bottom:105px}
+      .app{width:min(100% - 16px, 1200px); margin-top:10px}
+      .topbar{padding-left:12px; padding-right:12px}
+      .brand p{display:none}
+      .date-chip{font-size:.75rem; padding:8px 9px}
+      .panel-body{padding:13px}
+      .controls-grid{grid-template-columns:1fr 1fr}
+      .field.full-mobile{grid-column:1/-1}
+      .toolbar .btn{flex:1 1 145px}
+      .card-fields{grid-template-columns:1fr 1fr}
+      .employee-card{padding:13px}
+      .bonus-amount{font-size:2rem}
+      .bottom-inner{grid-template-columns:1fr 1fr}
+      .save-btn{width:100%; padding:0 10px}
+    }
+
+    @media print{
+      body{background:#fff; padding:0}
+      .topbar,.toolbar,.bottom-bar,.card-actions,.quick-bonus,.custom-row,.settings-panel{display:none !important}
+      .app{width:100%; margin:0}
+      .panel{box-shadow:none; border:none}
+      .employees-grid{grid-template-columns:repeat(2,1fr)}
+      .employee-card{break-inside:avoid}
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>Bonos de Desayuno</h1>
+        <p>Control diario de operadores · VDC 360°</p>
+      </div>
+      <div class="date-chip" id="dateChip">—</div>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="panel settings-panel">
+      <div class="panel-body">
+        <div class="section-title">
+          <div>
+            <h2>Configuración del día</h2>
+            <p>La página propone el bono según la hora, pero siempre se puede modificar.</p>
+          </div>
+        </div>
+
+        <div class="controls-grid">
+          <div class="field full-mobile">
+            <label for="workDate">Fecha</label>
+            <input id="workDate" type="date" />
+          </div>
+
+          <div class="field">
+            <label for="cutoffTime">Hora límite</label>
+            <input id="cutoffTime" type="time" value="06:30" />
+          </div>
+
+          <div class="field">
+            <label for="fullBonus">Bono completo</label>
+            <input id="fullBonus" type="number" inputmode="numeric" min="0" step="10" value="200" />
+          </div>
+
+          <div class="field">
+            <label for="lateBonus">Bono posterior</label>
+            <input id="lateBonus" type="number" inputmode="numeric" min="0" step="10" value="100" />
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn btn-primary" id="addEmployeeBtn">＋ Agregar operador</button>
+          <button class="btn btn-secondary" id="copyYesterdayBtn">Copiar operadores de ayer</button>
+          <button class="btn btn-secondary" id="shareBtn">Compartir resumen</button>
+          <button class="btn btn-secondary" onclick="window.print()">Imprimir</button>
+          <button class="btn btn-danger" id="clearDayBtn">Limpiar día</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-body">
+        <div class="stats">
+          <div class="stat">
+            <span>Operadores</span>
+            <strong id="statEmployees">0</strong>
+          </div>
+          <div class="stat">
+            <span>Bono completo</span>
+            <strong id="statFull">0</strong>
+          </div>
+          <div class="stat">
+            <span>Bono reducido</span>
+            <strong id="statReduced">0</strong>
+          </div>
+          <div class="stat">
+            <span>Total del día</span>
+            <strong id="statTotal">$0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="employees-grid" id="employeesGrid"></section>
+  </main>
+
+  <div class="bottom-bar">
+    <div class="bottom-inner">
+      <div class="bottom-total">
+        <span>Total autorizado</span>
+        <strong id="bottomTotal">$0</strong>
+      </div>
+      <button class="save-btn" id="saveBtn">Guardar cambios</button>
+    </div>
+  </div>
+
+  <dialog id="employeeDialog">
+    <form method="dialog" id="employeeForm">
+      <div class="dialog-body">
+        <h3>Agregar operador</h3>
+        <div class="field">
+          <label for="employeeName">Nombre</label>
+          <input id="employeeName" autocomplete="off" placeholder="Ej. Jesús" required />
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label for="employeeTime">Hora de llegada</label>
+          <input id="employeeTime" type="time" value="06:00" required />
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" value="cancel">Cancelar</button>
+          <button class="btn btn-primary" value="default" id="confirmEmployeeBtn">Agregar</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast">Guardado</div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const STORAGE_PREFIX = 'vdc_bonos_desayuno_';
+    const CONFIG_KEY = 'vdc_bonos_desayuno_config';
+
+    let records = [];
+    let saveTimer = null;
+
+    function todayISO(){
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      return d.toISOString().slice(0,10);
+    }
+
+    function previousDateISO(dateISO){
+      const d = new Date(dateISO + 'T12:00:00');
+      d.setDate(d.getDate() - 1);
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      return d.toISOString().slice(0,10);
+    }
+
+    function money(value){
+      return new Intl.NumberFormat('es-MX',{
+        style:'currency',
+        currency:'MXN',
+        maximumFractionDigits:0
+      }).format(Number(value || 0));
+    }
+
+    function storageKey(date = $('workDate').value){
+      return STORAGE_PREFIX + date;
+    }
+
+    function getConfig(){
+      return {
+        cutoff: $('cutoffTime').value || '06:30',
+        full: Math.max(0, Number($('fullBonus').value || 0)),
+        late: Math.max(0, Number($('lateBonus').value || 0))
+      };
+    }
+
+    function saveConfig(){
+      localStorage.setItem(CONFIG_KEY, JSON.stringify(getConfig()));
+    }
+
+    function loadConfig(){
+      try{
+        const cfg = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
+        if(cfg.cutoff) $('cutoffTime').value = cfg.cutoff;
+        if(cfg.full != null) $('fullBonus').value = cfg.full;
+        if(cfg.late != null) $('lateBonus').value = cfg.late;
+      }catch(e){}
+    }
+
+    function suggestedBonus(time){
+      if(!time) return 0;
+      const cfg = getConfig();
+      return time <= cfg.cutoff ? cfg.full : cfg.late;
+    }
+
+    function statusOf(record){
+      const suggested = suggestedBonus(record.time);
+      if(record.manual) return 'manual';
+      if(Number(record.bonus) === 0) return 'none';
+      return record.time <= getConfig().cutoff ? 'full' : 'reduced';
+    }
+
+    function statusText(status){
+      return {
+        full:'Bono completo',
+        reduced:'Bono reducido',
+        manual:'Modificado',
+        none:'Sin bono'
+      }[status] || 'Pendiente';
+    }
+
+    function loadDay(){
+      try{
+        records = JSON.parse(localStorage.getItem(storageKey()) || '[]');
+        if(!Array.isArray(records)) records = [];
+      }catch(e){
+        records = [];
+      }
+      updateDateChip();
+      render();
+    }
+
+    function saveDay(showMessage = false){
+      localStorage.setItem(storageKey(), JSON.stringify(records));
+      saveConfig();
+      if(showMessage) toast('Cambios guardados');
+    }
+
+    function queueSave(){
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => saveDay(false), 250);
+    }
+
+    function toast(message){
+      const el = $('toast');
+      el.textContent = message;
+      el.classList.add('show');
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.remove('show'), 1800);
+    }
+
+    function updateDateChip(){
+      const value = $('workDate').value;
+      const d = new Date(value + 'T12:00:00');
+      $('dateChip').textContent = new Intl.DateTimeFormat('es-MX',{
+        weekday:'short',
+        day:'2-digit',
+        month:'short'
+      }).format(d);
+    }
+
+    function addEmployee(name, time){
+      const bonus = suggestedBonus(time);
+      records.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        name: name.trim(),
+        time,
+        bonus,
+        manual:false
+      });
+      records.sort((a,b) => (a.time || '').localeCompare(b.time || ''));
+      saveDay(false);
+      render();
+    }
+
+    function updateRecord(id, patch){
+      const rec = records.find(r => r.id === id);
+      if(!rec) return;
+      Object.assign(rec, patch);
+      queueSave();
+      render();
+    }
+
+    function setQuickBonus(id, value){
+      const rec = records.find(r => r.id === id);
+      if(!rec) return;
+      const suggested = suggestedBonus(rec.time);
+      rec.bonus = Number(value);
+      rec.manual = Number(value) !== Number(suggested);
+      saveDay(false);
+      render();
+    }
+
+    function setCustomBonus(id){
+      const input = document.querySelector(`[data-custom="${id}"]`);
+      const value = Math.max(0, Number(input.value || 0));
+      const rec = records.find(r => r.id === id);
+      if(!rec) return;
+      rec.bonus = value;
+      rec.manual = value !== suggestedBonus(rec.time);
+      saveDay(false);
+      render();
+      toast('Bono actualizado');
+    }
+
+    function removeEmployee(id){
+      const rec = records.find(r => r.id === id);
+      if(!rec) return;
+      if(confirm(`¿Eliminar a ${rec.name} de este día?`)){
+        records = records.filter(r => r.id !== id);
+        saveDay(false);
+        render();
+      }
+    }
+
+    function recalculateAutomatic(){
+      records = records.map(rec => {
+        if(rec.manual) return rec;
+        return {...rec, bonus:suggestedBonus(rec.time)};
+      });
+      saveDay(false);
+      render();
+    }
+
+    function render(){
+      const grid = $('employeesGrid');
+
+      if(!records.length){
+        grid.innerHTML = `
+          <div class="empty">
+            <strong>No hay operadores registrados.</strong><br>
+            Presiona “Agregar operador” para comenzar.
+          </div>
+        `;
+      }else{
+        grid.innerHTML = records.map(rec => {
+          const suggested = suggestedBonus(rec.time);
+          const status = statusOf(rec);
+          const buttons = [0, getConfig().late, getConfig().full]
+            .filter((v,i,a) => a.indexOf(v) === i)
+            .sort((a,b)=>a-b)
+            .map(value => `
+              <button type="button"
+                class="${Number(rec.bonus) === Number(value) ? 'active' : ''}"
+                onclick="setQuickBonus('${rec.id}', ${value})">
+                ${money(value)}
+              </button>
+            `).join('');
+
+          return `
+            <article class="employee-card ${status}">
+              <div class="employee-head">
+                <div class="employee-name">
+                  <h3>${escapeHTML(rec.name)}</h3>
+                  <small>Entrada registrada</small>
+                </div>
+                <span class="status ${status}">${statusText(status)}</span>
+              </div>
+
+              <div class="card-fields">
+                <div class="field">
+                  <label>Nombre</label>
+                  <input
+                    value="${escapeAttr(rec.name)}"
+                    onchange="updateRecord('${rec.id}', {name:this.value.trim() || 'Sin nombre'})"
+                  />
+                </div>
+                <div class="field">
+                  <label>Hora de llegada</label>
+                  <input
+                    type="time"
+                    value="${rec.time || ''}"
+                    onchange="
+                      const r = records.find(x=>x.id==='${rec.id}');
+                      const oldSuggested = suggestedBonus(r.time);
+                      r.time = this.value;
+                      if(!r.manual || Number(r.bonus) === Number(oldSuggested)){
+                        r.bonus = suggestedBonus(r.time);
+                        r.manual = false;
+                      }
+                      saveDay(false);
+                      render();
+                    "
+                  />
+                </div>
+              </div>
+
+              <div class="bonus-box">
+                <div class="bonus-label">Bono autorizado</div>
+                <div class="bonus-amount">${money(rec.bonus)}</div>
+                <div class="suggested">
+                  ${rec.manual
+                    ? `Sugerido por horario: ${money(suggested)}`
+                    : `Calculado automáticamente`}
+                </div>
+
+                <div class="quick-bonus">
+                  ${buttons}
+                </div>
+
+                <div class="custom-row">
+                  <input
+                    data-custom="${rec.id}"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    step="10"
+                    placeholder="Otro monto"
+                  />
+                  <button type="button" onclick="setCustomBonus('${rec.id}')">Aplicar</button>
+                </div>
+              </div>
+
+              <div class="card-actions">
+                <button class="mini-btn mini-danger" onclick="removeEmployee('${rec.id}')">
+                  Eliminar
+                </button>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      updateStats();
+    }
+
+    function updateStats(){
+      const total = records.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
+      const full = records.filter(r => !r.manual && statusOf(r) === 'full').length;
+      const reduced = records.filter(r => !r.manual && statusOf(r) === 'reduced').length;
+
+      $('statEmployees').textContent = records.length;
+      $('statFull').textContent = full;
+      $('statReduced').textContent = reduced;
+      $('statTotal').textContent = money(total);
+      $('bottomTotal').textContent = money(total);
+    }
+
+    function copyYesterday(){
+      const yesterday = previousDateISO($('workDate').value);
+      let old = [];
+      try{
+        old = JSON.parse(localStorage.getItem(storageKey(yesterday)) || '[]');
+      }catch(e){}
+
+      if(!Array.isArray(old) || !old.length){
+        alert('No hay operadores guardados en el día anterior.');
+        return;
+      }
+
+      const existingNames = new Set(records.map(r => r.name.toLowerCase()));
+      old.forEach(rec => {
+        if(!existingNames.has(String(rec.name).toLowerCase())){
+          records.push({
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+            name:rec.name,
+            time:rec.time || '06:00',
+            bonus:suggestedBonus(rec.time || '06:00'),
+            manual:false
+          });
+        }
+      });
+
+      records.sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+      saveDay(false);
+      render();
+      toast('Operadores copiados');
+    }
+
+    function summaryText(){
+      const date = $('workDate').value;
+      const total = records.reduce((sum,r) => sum + Number(r.bonus || 0), 0);
+
+      let text = `BONOS DE DESAYUNO VDC 360°\nFecha: ${date}\n\n`;
+
+      if(!records.length){
+        text += 'Sin operadores registrados.\n';
+      }else{
+        records.forEach((r,i) => {
+          const tag = r.manual ? ' (modificado)' : '';
+          text += `${i+1}. ${r.name} | ${r.time || '--:--'} | ${money(r.bonus)}${tag}\n`;
+        });
+      }
+
+      text += `\nTOTAL: ${money(total)}`;
+      return text;
+    }
+
+    async function shareSummary(){
+      const text = summaryText();
+
+      if(navigator.share){
+        try{
+          await navigator.share({
+            title:'Bonos de desayuno',
+            text
+          });
+          return;
+        }catch(e){
+          if(e.name === 'AbortError') return;
+        }
+      }
+
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    }
+
+    function clearDay(){
+      if(confirm('¿Borrar todos los operadores y bonos de esta fecha?')){
+        records = [];
+        localStorage.removeItem(storageKey());
+        render();
+        toast('Día limpiado');
+      }
+    }
+
+    function escapeHTML(value){
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#039;'
+      })[char]);
+    }
+
+    function escapeAttr(value){
+      return escapeHTML(value);
+    }
+
+    $('workDate').value = todayISO();
+    loadConfig();
+    loadDay();
+
+    $('addEmployeeBtn').addEventListener('click', () => {
+      $('employeeName').value = '';
+      $('employeeTime').value = '06:00';
+      $('employeeDialog').showModal();
+      setTimeout(() => $('employeeName').focus(), 80);
+    });
+
+    $('employeeForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = $('employeeName').value.trim();
+      const time = $('employeeTime').value;
+      if(!name || !time) return;
+      addEmployee(name, time);
+      $('employeeDialog').close();
+      toast('Operador agregado');
+    });
+
+    $('workDate').addEventListener('change', loadDay);
+    $('cutoffTime').addEventListener('change', () => {
+      saveConfig();
+      recalculateAutomatic();
+    });
+    $('fullBonus').addEventListener('change', () => {
+      saveConfig();
+      recalculateAutomatic();
+    });
+    $('lateBonus').addEventListener('change', () => {
+      saveConfig();
+      recalculateAutomatic();
+    });
+
+    $('copyYesterdayBtn').addEventListener('click', copyYesterday);
+    $('shareBtn').addEventListener('click', shareSummary);
+    $('clearDayBtn').addEventListener('click', clearDay);
+    $('saveBtn').addEventListener('click', () => saveDay(true));
+
+    window.addEventListener('beforeunload', () => saveDay(false));
+  </script>
+</body>
+</html>
