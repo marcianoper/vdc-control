@@ -672,17 +672,17 @@
 
           <div class="field">
             <label for="fullBonus">Bono completo</label>
-            <input id="fullBonus" type="number" inputmode="numeric" min="0" step="10" value="200" />
+            <input id="fullBonus" type="number" enterkeyhint="done" inputmode="numeric" min="0" step="10" value="200" />
           </div>
 
           <div class="field">
             <label for="lateBonus">Bono posterior</label>
-            <input id="lateBonus" type="number" inputmode="numeric" min="0" step="10" value="100" />
+            <input id="lateBonus" type="number" enterkeyhint="done" inputmode="numeric" min="0" step="10" value="100" />
           </div>
 
           <div class="field">
             <label for="pageOperator">Operador de la página</label>
-            <input id="pageOperator" type="text" autocomplete="name" placeholder="Ej. Marciano" />
+            <input id="pageOperator" type="text" enterkeyhint="done" autocomplete="name" placeholder="Ej. Marciano" />
           </div>
         </div>
 
@@ -730,7 +730,7 @@
         <div class="controls-grid" style="grid-template-columns:2fr 1fr">
           <div class="field">
             <label for="searchOperator">Buscar operador</label>
-            <input id="searchOperator" type="search" placeholder="Escribe un nombre..." />
+            <input id="searchOperator" type="search" enterkeyhint="done" placeholder="Escribe un nombre..." />
           </div>
           <div class="field">
             <label for="statusFilter">Mostrar</label>
@@ -763,7 +763,7 @@
         <h3>Agregar operador</h3>
         <div class="field">
           <label for="employeeName">Nombre</label>
-          <input id="employeeName" list="savedEmployeesList" autocomplete="off" placeholder="Ej. Jesús" required />
+          <input id="employeeName" list="savedEmployeesList" enterkeyhint="done" autocomplete="off" placeholder="Ej. Jesús" required />
           <datalist id="savedEmployeesList"></datalist>
         </div>
         <div class="field" style="margin-top:12px">
@@ -1085,7 +1085,6 @@
       const responsible = $('pageOperator').value.trim();
 
       if(!responsible){
-        $('pageOperator').focus();
         toast('Escribe quién está manejando la página');
         return;
       }
@@ -1165,6 +1164,7 @@
                   <label>Nombre</label>
                   <input
                     value="${escapeAttr(rec.name)}"
+                    enterkeyhint="done"
                     onchange="updateRecord('${rec.id}', {name:this.value.trim() || 'Sin nombre'})"
                   />
                 </div>
@@ -1206,6 +1206,7 @@
                     data-custom="${rec.id}"
                     type="number"
                     inputmode="numeric"
+                    enterkeyhint="done"
                     min="0"
                     step="10"
                     placeholder="Otro monto"
@@ -1349,7 +1350,6 @@
       $('employeeName').value = '';
       $('employeeTime').value = '06:00';
       $('employeeDialog').showModal();
-      setTimeout(() => $('employeeName').focus(), 80);
     });
 
     $('employeeForm').addEventListener('submit', (event) => {
@@ -1383,6 +1383,29 @@
     $('searchOperator').addEventListener('input', render);
     $('statusFilter').addEventListener('change', render);
     $('saveBtn').addEventListener('click', () => saveDay(true));
+
+
+    // En móviles: Enter cierra el teclado y no envía formularios accidentalmente.
+    document.addEventListener('keydown', (event) => {
+      const target = event.target;
+      const isEditable =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement;
+
+      if(event.key === 'Enter' && isEditable){
+        event.preventDefault();
+        target.blur();
+      }
+    });
+
+    // También cierra el teclado al aplicar un monto personalizado.
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('.custom-row button');
+      if(button && document.activeElement instanceof HTMLElement){
+        document.activeElement.blur();
+      }
+    });
 
     window.addEventListener('beforeunload', () => saveDay(false));
   </script>
